@@ -164,7 +164,7 @@ def register():
         cur = db.cursor()
         cur.execute("""
             INSERT INTO users (name, email, rollno, password_hash, phone, role)
-            VALUES (%s, %s, %s, %s, %s, 'operator')
+            VALUES (%s, %s, %s, %s, %s, 'user')
         """, (name, email, rollno, password, phone))
         db.commit()
         cur.close()
@@ -716,7 +716,7 @@ def Machine_operator():
     sorted_bookings = [heapq.heappop(pq)[2] for _ in range(len(pq))]
 
     return render_template(
-        "Machine_operator.html",
+        "machine_operator.html",
         bookings=sorted_bookings + cancelled
     )
 
