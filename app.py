@@ -32,14 +32,19 @@ DB_CONFIG = {
 #         port=DB_CONFIG["port"],
 #         cursor_factory=psycopg2.extras.RealDictCursor
 #     )
+
+DATABASE_URL=postgresql://laundry_db_pjb0_user:an7KnbVgrIQ94qkyGGw8kjUui1DF9cBM@dpg-d5btkd75r7bs73al9sjg-a/laundry_db_pjb0
+
 def get_db():
+    database_url = os.getenv("DATABASE_URL")
+
+    if not database_url:
+        raise Exception("DATABASE_URL environment variable is not set")
+
     return psycopg2.connect(
-        host=os.getenv("host"),
-        database=os.getenv("dbname"),
-        user=os.getenv("user"),
-        password=os.getenv("password"),
-        port=os.getenv("port", 5432),
-        cursor_factory=RealDictCursor
+        database_url,
+        cursor_factory=RealDictCursor,
+        sslmode="require"
     )
 
 # =====================================================
