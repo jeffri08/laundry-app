@@ -910,8 +910,8 @@ def system_settings():
             slots_per_day = int(request.form.get('slots_per_day') or 20)
 
             # Convert time safely
-            start_time = datetime.strptime(start_time, "%H:%M").time()
-            end_time = datetime.strptime(end_time, "%H:%M").time()
+            start_time = request.form.get("start_time")  # '06:00' or '06:00:00'
+            end_time = request.form.get("end_time")
 
             db = get_db()
             cur = db.cursor()
