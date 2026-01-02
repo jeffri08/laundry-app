@@ -164,7 +164,7 @@
         </div>
 
         {% if s.booked_count == 0 %}
-            <a href="{{ url_for('book_slot', slot_id=s.id) }}" class="book-btn">
+            <a href="{{ url_for('book_slot', slot_id=s.slot_id) }}" class="book-btn">
                 <button class="book-btn">Book Now</button>
             </a>
         {% else %}
