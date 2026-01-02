@@ -138,13 +138,12 @@
 
   <!-- SLOT CARDS -->
   {% if slots %}
-<div class="slot-container">
-    {% for s in slots %}
-    <div class="slot-card"
+<div class="slot-card"
      data-machine="machine-{{ s.machine_id }}"
      data-date="{{ s.slot_date }}"
      data-endtime="{{ s.slot_end }}"
      id="card-{{ s.id }}">
+
 
     >
         <div class="slot-header">🧺 {{ s.machine_name }}</div>
@@ -176,12 +175,12 @@
 </div>
 {% else %}
 <p class="text-light mt-4">No slots available.</p>
-    <div id="noSlotsMessage" class="no-slots-message" style="display:none;">
+
+{% endif %}
+<div id="noSlotsMessage" class="no-slots-message" style="display:none;">
     🚫 <strong>Today's slots are closed.</strong><br>
     📅 Tomorrow’s slots will be available soon.
     </div>
-{% endif %}
-
 
 
 <!-- JAVASCRIPT -->
@@ -238,43 +237,46 @@ function filterByTab(tab) {
 
 function hideExpiredSlots() {
     const now = new Date();
-
-    const currentHour = now.getHours();
-    const today = new Date().toDateString();
+    const todayStr = now.toISOString().split("T")[0];
 
     let visibleCount = 0;
+    let hasFutureSlotToday = false;
 
     document.querySelectorAll('.slot-card').forEach(card => {
-        const slotDate = new Date(card.dataset.date).toDateString();
-        const endTime = card.dataset.endtime;
+        const slotDate = card.dataset.date;       // yyyy-mm-dd
+        const endTime  = card.dataset.endtime;    // HH:MM:SS
 
-        // Convert slot end time
-        const slotEnd = new Date(`${card.dataset.date}T${endTime}`);
+        if (!slotDate || !endTime) return;
 
-        let hide = false;
+        const slotEnd = new Date(`${slotDate}T${endTime}`);
 
-        // 🔴 RULE 1: Hide everything from 10:00 PM to 1:59 AM
-        if (currentHour >= 22 || currentHour < 1) {
-            hide = true;
+        // ✅ Future day slots → always visible
+        if (slotDate > todayStr) {
+            card.style.display = "block";
+            visibleCount++;
+            return;
         }
 
-        // 🔴 RULE 2: Hide expired slots
+        // 🔴 Today expired slot → hide
         if (slotEnd < now) {
-            hide = true;
-        }
-
-        if (hide) {
             card.style.display = "none";
         } else {
             card.style.display = "block";
             visibleCount++;
+            hasFutureSlotToday = true;
         }
     });
 
-    // Show message if no slots are available
     const msg = document.getElementById("noSlotsMessage");
-    if (msg) {
-        msg.style.display = visibleCount === 0 ? "block" : "none";
+
+    if (!hasFutureSlotToday && visibleCount > 0) {
+        // All today slots finished, tomorrow exists
+        msg.style.display = "block";
+    } else if (visibleCount === 0) {
+        msg.style.display = "block";
+        msg.innerHTML = "🚫 No slots available.";
+    } else {
+        msg.style.display = "none";
     }
 }
 
