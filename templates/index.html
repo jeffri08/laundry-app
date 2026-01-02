@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="text-center">
+    <h1 class="mb-3">Welcome to Laundry Booking System</h1>
+    <p class="lead">Easily book washing machine slots online.</p>
+    {% if not session.user_id %}
+    <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+    <a href="{{ url_for('register') }}" class="btn btn-success">Register</a>
+    {% else %}
+    <a href="{{ url_for('dashboard') }}" class="btn btn-info">Go to Dashboard</a>
+    {% endif %}
+</div>
+{% endblock %}

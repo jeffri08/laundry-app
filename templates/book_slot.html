@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+{% block content %}
+<style>
+    body {
+        background:#ffffff;
+        background-size: cover;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 85vh;
+    }
+
+    .register-card {
+        width: 100%;
+        max-width: 450px;
+        background: transparent;
+        padding: 35px;
+        border-radius: 15px;
+        box-shadow: 0px 8px 25px rgba(0,0,0,0.2);
+        animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .register-card h3 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-weight: 700;
+        color: #333;
+        letter-spacing: 1px;
+    }
+    .form_label{
+    color:black;
+    }
+
+    @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(20px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+<h3>Book Slot</h3>
+<p><strong>Machine:</strong> {{ slot.machine_name }}</p>
+<p><strong>Date:</strong> {{ slot.slot_date }}</p>
+<p><strong>Time:</strong> {{ slot.slot_start }} - {{ slot.slot_end }}</p>
+
+{% if existing %}
+<p class="text-danger">This slot is already booked.</p>
+{% else %}
+<form method="POST">
+  <button type="submit" class="btn btn-primary">Confirm Booking</button>
+</form>
+</div>
+</div>
+
+{% endif %}
+{% endblock %}

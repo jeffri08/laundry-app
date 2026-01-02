@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Create Laundry Slot</h2>
+    <form method="post" action="{{ url_for('create_slot') }}">
+        <div class="mb-3">
+            <label for="machine_id" class="form-label">Select Machine</label>
+            <select name="machine_id" id="machine_id" class="form-select" required>
+                {% for machine in machines %}
+                    <option value="{{ machine.id }}">{{ machine.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="slot_date" class="form-label">Slot Date</label>
+            <input type="date" name="slot_date" id="slot_date" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="slot_start" class="form-label">Start Time</label>
+            <input type="time" name="slot_start" id="slot_start" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="slot_end" class="form-label">End Time</label>
+            <input type="time" name="slot_end" id="slot_end" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">Create Slot</button>
+        <a href="{{ url_for('view_slots') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

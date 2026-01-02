@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Operator Dashboard</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>User</th>
+        <th>Machine</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+        <th>Receipt</th>
+        <th>Action</th>
+    </tr>
+
+    {% for b in bookings %}
+    <tr>
+        <td>{{ b.user_name }}</td>
+        <td>{{ b.machine_name }}</td>
+        <td>{{ b.slot_date }}</td>
+        <td>{{ b.slot_start }} - {{ b.slot_end }}</td>
+        <td>
+            {% if b.status == 'booked' %}
+                <span class="badge bg-warning">Booked</span>
+            {% elif b.status == 'validated' %}
+                <span class="badge bg-success">Validated</span>
+            {% else %}
+                <span class="badge bg-secondary">{{ b.status }}</span>
+            {% endif %}
+        </td>
+
+        <!-- Receipt ALWAYS visible for both booked + validated -->
+        <td>
+            <a href="{{ url_for('receipt', booking_id=b.id) }}"
+               class="btn btn-info btn-sm">
+               View Receipt
+            </a>
+        </td>
+
+        <td>
+            {% if b.status == 'booked' %}
+                <a href="{{ url_for('operator_validate', booking_id=b.id) }}"
+                   class="btn btn-success btn-sm">Validate</a>
+
+                <a href="{{ url_for('operator_cancel', booking_id=b.id) }}"
+                   class="btn btn-danger btn-sm">Cancel</a>
+
+            {% elif b.status == 'validated' %}
+
+                <span class="badge bg-success">Approved</span>
+
+
+            {% else %}
+                <span class="text-muted">Not Available</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>
+{% endblock %}

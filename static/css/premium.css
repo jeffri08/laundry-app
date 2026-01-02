@@ -1,0 +1,79 @@
+:root{
+  --bg1:#0f0c29; --bg2:#302b63; --accent:#ffcc00; --accent-dark:#ffb300;
+  --neon-green:#00e676; --neon-red:#ff5252; --card-bg:rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.06);
+}
+
+body.theme-premium{
+  background-image: url('../images/plane.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed; /* premium effect */
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    color: #eaf0ff;
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  min-height: 100vh;
+}
+.nav-glass {
+    background: rgba(0, 0, 0, 0.35); /* transparent black */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+}
+
+
+/* container override for wide grid */
+.container.theme-full {
+  max-width: 1200px !important;
+  margin: 28px auto;
+  padding: 0 18px;
+}
+
+/* header */
+.page-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.page-head h2 { color:var(--accent); font-weight:800; text-shadow:0 3px 10px rgba(255,204,0,0.06); }
+
+/* tabs & filters */
+.premium-tabs { display:flex; gap:8px; }
+.premium-tab { padding:8px 14px; border-radius:999px; background: rgba(255,255,255,0.02); cursor:pointer; border:1px solid var(--glass-border); }
+.premium-tab.active { background: linear-gradient(90deg,var(--accent),var(--accent-dark)); color:#000; font-weight:700; }
+.filter-bar { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; align-items:center; }
+.filter-pill { padding:8px 12px; border-radius:999px; background:rgba(255,255,255,0.02); cursor:pointer; border:1px solid var(--glass-border); color:#eaf0ff; }
+.filter-pill.active { box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+
+/* grid & card */
+.slot-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:22px; }
+.slot-card { background:var(--card-bg); border-radius:14px; padding:18px; border:1px solid var(--glass-border); backdrop-filter: blur(6px); box-shadow:0 12px 28px rgba(0,0,0,0.45); transition: transform .28s ease, box-shadow .28s ease; position:relative; overflow:hidden; }
+.slot-card:hover { transform: translateY(-8px); box-shadow:0 28px 60px rgba(0,0,0,0.55); }
+.slot-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.slot-title { font-weight:800; color:var(--accent); font-size:1.14rem; }
+.slot-date { color:#dfe9ff; }
+
+/* time badge & status */
+.time-badge { display:inline-block; padding:8px 12px; border-radius:10px; margin-right:8px; background:linear-gradient(90deg,#eef3ff,#dfe9ff); color:#111; font-weight:700; }
+.badge-available { background:linear-gradient(90deg,var(--neon-green),#00c853); color:#001; padding:8px 12px; border-radius:10px; font-weight:800; box-shadow:0 12px 30px rgba(0,230,118,0.12); }
+.badge-booked { background:linear-gradient(90deg,var(--neon-red),#ff1744); color:#fff; padding:8px 12px; border-radius:10px; font-weight:800; box-shadow:0 12px 30px rgba(255,82,82,0.12); }
+
+/* CTA */
+.btn-cta { width:100%; padding:12px; border-radius:12px; background:linear-gradient(135deg,var(--accent),var(--accent-dark)); color:#000; font-weight:800; border:none; box-shadow:0 12px 30px rgba(255,204,0,0.12); display:inline-block; text-align:center; text-decoration:none; }
+.btn-disabled { opacity:0.6; cursor:not-allowed; background:rgba(255,255,255,0.03); }
+
+/* flip card basics for details (small) */
+.flip-wrap { perspective:1000px; }
+.flip-card { position:relative; transform-style:preserve-3d; transition:transform .6s; }
+.flip-card.is-flipped { transform:rotateY(180deg); }
+.flip-front, .flip-back { position:absolute; inset:0; border-radius:12px; }
+.flip-back { transform:rotateY(180deg); padding:12px; background: rgba(0,0,0,0.08); }
+
+/* seat demo (small grid) */
+.seat-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-top:12px; }
+.seat { padding:8px; border-radius:8px; text-align:center; font-weight:700; cursor:pointer; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); }
+.seat.available { background:linear-gradient(90deg,#b9f6ca,#69f0ae); color:#003; }
+.seat.booked { background:linear-gradient(90deg,#ff8a80,#ff5252); color:#fff; }
+
+/* responsive tweaks */
+@media (max-width:700px) {
+  .seat-grid { grid-template-columns:repeat(3,1fr); }
+  .slot-grid { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); }
+}

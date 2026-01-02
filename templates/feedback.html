@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Send Feedback</h2>
+<form method="POST">
+  <div class="mb-3">
+    <label>Your Message</label>
+    <textarea name="message" class="form-control" rows="4" required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

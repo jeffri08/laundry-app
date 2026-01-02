@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<h2>Welcome, {{ session.user_name }}</h2>
+<hr>
+
+<h4>Your Bookings</h4>
+
+{% if bookings %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Machine</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Status</th>
+      <th>Receipt</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  {% for b in bookings %}
+    <tr>
+      <td>{{ b.booking_id }}</td>
+      <td>{{ b.machine_name }}</td>
+      <td>{{ b.slot_date }}</td>
+      <td>{{ b.slot_start }} - {{ b.slot_end }}</td>
+      <td>
+            {% if b.status == 'booked' %}
+                <span class="badge bg-warning">Booked</span>
+            {% elif b.status == 'validated' %}
+                <span class="badge bg-success">Validated</span>
+            {% else %}
+                <span class="badge bg-secondary">{{ b.status }}</span>
+            {% endif %}
+        </td>
+
+      <!-- DIRECT REDIRECT TO RECEIPT PAGE -->
+      <td>
+        {% if b.status == 'booked' %}
+          <a href="{{ url_for('receipt', booking_id=b.booking_id) }}"
+             class="btn btn-info btn-sm">View Receipt</a>
+        {% else %}
+          <span class="text-muted">Not Available</span>
+        {% endif %}
+      </td>
+
+      <!-- CANCEL BUTTON -->
+      <td>
+        {% if b.status == 'booked' %}
+          <a href="{{ url_for('cancel_booking', booking_id=b.booking_id) }}"
+             class="btn btn-danger btn-sm">Cancel</a>
+        {% endif %}
+      </td>
+
+    </tr>
+  {% endfor %}
+  </tbody>
+
+</table>
+
+{% else %}
+<p>No bookings yet.</p>
+{% endif %}
+
+<a href="{{ url_for('view_slots') }}" class="btn btn-primary">View Slots</a>
+<a href="{{ url_for('feedback') }}" class="btn btn-secondary">Give Feedback</a>
+
+{% endblock %}

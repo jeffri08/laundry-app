@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<div class="container mt-4 d-flex justify-content-center">
+
+    <div class="card shadow-lg p-4" style="max-width: 600px; width:100%; border-radius: 12px;">
+
+        <h2 class="text-center mb-3" style="font-weight: 700; color: #2c3e50;">
+            Laundry Booking Receipt
+        </h2>
+
+        <hr>
+
+        <div class="mt-3" style="font-size: 1.1rem; line-height: 1.7;">
+
+            <p><strong>🧾 Booking ID:</strong> {{ booking.id }}</p>
+
+            <p><strong>👤 User:</strong> {{ booking.user_name }}</p>
+
+            <p><strong>🧺 Machine:</strong> {{ booking.machine_name }}</p>
+
+            <p><strong>📅 Date:</strong> {{ booking.slot_date }}</p>
+
+            <p><strong>⏰ Time:</strong> {{ booking.slot_start }} - {{ booking.slot_end }}</p>
+
+        </div>
+
+        <hr>
+
+        <div class="text-center mt-3">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary px-4">Back to Dashboard</a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

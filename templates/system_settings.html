@@ -1,0 +1,106 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<style>
+.settings-card {
+    background: rgba(255,255,255,0.1);
+    padding: 25px;
+    border-radius: 15px;
+    color: white;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+.settings-card label {
+    font-weight: 600;
+}
+</style>
+
+<h2 class="mb-4" style="color:white;">⚙️ System Settings</h2>
+
+<div class="settings-card">
+
+<form method="POST">
+
+    <!-- TIME SETTINGS -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label>Start Time</label>
+            <input type="time" name="start_time" class="form-control"
+                   value="{{ settings.start_time }}" required>
+        </div>
+
+        <div class="col-md-6">
+            <label>End Time</label>
+            <input type="time" name="end_time" class="form-control"
+                   value="{{ settings.end_time }}" required>
+        </div>
+    </div>
+
+    <!-- WASH SETTINGS -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label>Wash Duration (minutes)</label>
+            <input type="number" name="wash_duration" class="form-control"
+                   value="{{ settings.wash_duration }}" required>
+        </div>
+
+        <div class="col-md-4">
+            <label>Break After X Washes</label>
+            <input type="number" name="break_after" class="form-control"
+                   value="{{ settings.break_after }}" required>
+        </div>
+
+        <div class="col-md-4">
+            <label>Break Duration (minutes)</label>
+            <input type="number" name="break_duration" class="form-control"
+                   value="{{ settings.break_duration }}" required>
+        </div>
+    </div>
+
+    <!-- NEW FIELD: SLOTS PER DAY -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label>Slots Per Machine Per Day</label>
+            <input type="number" name="slots_per_day" class="form-control"
+                   value="{{ settings.slots_per_day }}" required>
+        </div>
+    </div>
+
+    <hr style="border-color:white;">
+
+    <!-- USER LIMITS -->
+    <h4 style="color:#ffd369;">User Booking Limits</h4>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label>Daily Limit</label>
+            <input type="number" name="daily_limit" class="form-control"
+                   value="{{ settings.daily_limit }}" required>
+        </div>
+
+        <div class="col-md-4">
+            <label>Weekly Limit</label>
+            <input type="number" name="weekly_limit" class="form-control"
+                   value="{{ settings.weekly_limit }}" required>
+        </div>
+
+        <div class="col-md-4">
+            <label>Monthly Limit</label>
+            <input type="number" name="monthly_limit" class="form-control"
+                   value="{{ settings.monthly_limit }}" required>
+        </div>
+    </div>
+
+    <!-- AUTO-GENERATE -->
+    <div class="form-check mb-3">
+        <input type="checkbox" name="auto_generate" class="form-check-input"
+               {% if settings.auto_generate %}checked{% endif %}>
+        <label class="form-check-label">Auto-generate daily slots</label>
+    </div>
+
+    <button class="btn btn-warning w-100">Update Settings</button>
+
+</form>
+</div>
+
+{% endblock %}

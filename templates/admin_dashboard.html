@@ -1,0 +1,134 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<style>
+    .admin-title {
+        font-weight: 800;
+        font-size: 2rem;
+        color: #2c3e50;
+    }
+
+    .summary-card {
+        border-radius: 15px;
+        background: linear-gradient(135deg, #6dd5ed, #2193b0);
+        color: white;
+        padding: 20px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .summary-card h5 {
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    .summary-card h3 {
+        font-weight: 900;
+        font-size: 2rem;
+    }
+
+    .admin-actions a {
+        margin: 5px;
+    }
+
+    .table-container {
+        margin-top: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    .table thead {
+        background: #212529;
+        color: white;
+        font-weight: 600;
+    }
+
+    .btn-delete {
+        border-radius: 10px;
+        padding: 5px 15px;
+        font-size: 0.85rem;
+    }
+</style>
+
+<h2 class="admin-title mb-4">Admin Dashboard</h2>
+
+
+<!-- SUMMARY CARDS -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="summary-card text-center">
+            <h5>Total Users</h5>
+            <h3>{{ users_count }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="summary-card text-center">
+            <h5>Total Bookings</h5>
+            <h3>{{ bookings_count }}</h3>
+        </div>
+    </div>
+</div>
+
+
+<!-- ACTION BUTTONS -->
+<div class="admin-actions mb-4">
+    <a href="{{ url_for('view_users') }}" class="btn btn-warning">Manage Users</a>
+    <a href="{{ url_for('manage_machines') }}" class="btn btn-primary">Manage Machines</a>
+    <a href="{{ url_for('create_slot')}}" class="btn btn-success">Create Slots</a>
+    <a href="{{ url_for('view_slots') }}" class="btn btn-info">View Slots</a>
+    <a href="{{ url_for('Machine_operator') }}" class="btn btn-dark">Operator Dashboard</a>
+    <a href="{{ url_for('view_feedback') }}" class="btn btn-secondary">View Feedback</a>
+    <a href="{{ url_for('system_settings') }}" class="btn btn-warning" style="background:#ffb300;color:black;">System Settings</a>
+</div>
+
+
+<hr>
+
+
+<!-- MACHINE LIST -->
+<h4 class="mt-4">Machines List</h4>
+
+<div class="table-container">
+    <table class="table table-bordered table-striped mb-0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th width="130">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for m in machines %}
+            <tr>
+                <td>{{ m.id }}</td>
+                <td>{{ m.name }}</td>
+                <td>{{ m.location }}</td>
+
+                <td>
+                    {% if m.status == 'available' %}
+                        <span class="badge bg-success">Available</span>
+                    {% elif m.status == 'in_use' %}
+                        <span class="badge bg-warning">In Use</span>
+                    {% else %}
+                        <span class="badge bg-danger">Maintenance</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a href="{{ url_for('delete_machine', machine_id=m.id) }}"
+                       class="btn btn-danger btn-sm btn-delete"
+                       onclick="return confirm('⚠ Delete this machine? All future slots for this machine will also be deleted!');">
+                        🗑 Delete
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

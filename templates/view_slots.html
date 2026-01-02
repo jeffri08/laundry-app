@@ -1,0 +1,275 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<style>
+ body { background: #0d0f27; }
+
+ /* BIGGER PREMIUM SLOT CARDS */
+ .slot-card {
+     background: rgba(255,255,255,0.08);
+     padding: 32px;
+     border-radius: 20px;
+     box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+     backdrop-filter: blur(10px);
+     transition: 0.3s ease;
+     min-height: 230px;
+     color: white;
+ }
+ .slot-card:hover {
+     transform: translateY(-8px) scale(1.02);
+     box-shadow: 0 14px 32px rgba(255,255,255,0.1);
+ }
+
+ .slot-container {
+     display: grid;
+     grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+     gap: 25px;
+     margin-top: 30px;
+ }
+
+ .slot-header { font-size: 1.6rem; font-weight: 800; color: #ffd369; }
+ .slot-date { font-size: 1.2rem; margin-bottom: 18px; color: #dcdcdc; }
+
+ .slot-time-box {
+     background: #ffd369;
+     color: black;
+     padding: 12px 20px;
+     border-radius: 10px;
+     font-weight: 700;
+     margin-right: 12px;
+     margin-top: 5px;
+     display: inline-block;
+ }
+
+ .status-available {
+     background: #00c853;
+     padding: 12px 18px;
+     border-radius: 12px;
+     font-weight: 800;
+ }
+ .status-booked {
+     background: #ff1744;
+     padding: 12px 18px;
+     border-radius: 12px;
+     font-weight: 800;
+ }
+
+ .book-btn {
+     margin-top: 18px;
+     width: 100%;
+     padding: 14px;
+     border-radius: 12px;
+     font-size: 1.2rem;
+     background: linear-gradient(135deg, #ffd369, #ffb300);
+     color: black;
+     font-weight: bold;
+ }
+
+ /* Tabs */
+ .premium-tabs { display: flex; gap: 15px; }
+ .premium-tab {
+     padding: 8px 20px;
+     border-radius: 20px;
+     background: rgba(255,255,255,0.1);
+     cursor: pointer;
+     color: white;
+     font-weight: 600;
+ }
+ .premium-tab.active {
+     background: #ffd369;
+     color: black;
+ }
+
+ /* Machine filters */
+ .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+ .filter-pill {
+     padding: 8px 18px;
+     background: rgba(255,255,255,0.1);
+     border-radius: 25px;
+     cursor: pointer;
+     color: white;
+     font-weight: 600;
+ }
+ .filter-pill.active {
+     background: #ffd369;
+     color: black;
+ }
+ .no-slots-message {
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
+    font-size: 18px;
+    color: #ffffff;
+    background: #2c2f4a;
+    border-radius: 10px;
+}
+
+</style>
+
+
+<div class="container">
+
+  <!-- PAGE HEADER -->
+  <div class="page-head d-flex justify-content-between align-items-center">
+      <div>
+          <h2 style="color:white;"> Premium Slots</h2>
+          <p class="text-muted" style="color:#dfe9ff">
+              Book by date, machine or week — premium experience
+          </p>
+      </div>
+
+      <div class="premium-tabs">
+          <div class="premium-tab active" data-tab="all">All</div>
+          <div class="premium-tab" data-tab="today">Today</div>
+          <!--<div class="premium-tab" data-tab="tomorrow">Tomorrow</div>
+          <div class="premium-tab" data-tab="week">This Week</div>-->
+      </div>
+  </div>
+
+  <!-- MACHINE FILTERS -->
+  <div class="filter-bar">
+      <div class="filter-pill active" data-filter="all">All Machines</div>
+      {% for m in machines %}
+        <div class="filter-pill" data-filter="machine-{{ m.id }}">{{ m.name }}</div>
+      {% endfor %}
+      <div class="filter-pill" id="refreshBtn">🔄 Refresh</div>
+  </div>
+
+
+  <!-- SLOT CARDS -->
+  {% if slots %}
+<div class="slot-container">
+    {% for s in slots %}
+    <div class="slot-card"
+     data-machine="machine-{{ s.machine_id }}"
+     data-date="{{ s.slot_date }}"
+     data-endtime="{{ s.slot_end }}"
+     id="card-{{ s.id }}">
+
+    >
+        <div class="slot-header">🧺 {{ s.machine_name }}</div>
+
+        <div class="slot-date">📅 {{ s.slot_date }}</div>
+
+        <div>
+            <span class="slot-time-box">Start: {{ s.slot_start }}</span>
+            <span class="slot-time-box">End: {{ s.slot_end }}</span>
+        </div>
+
+        <div class="mt-3">
+            {% if s.booked_count == 0 %}
+                <span class="status-available">🟢 Available</span>
+            {% else %}
+                <span class="status-booked">🔴 Booked</span>
+            {% endif %}
+        </div>
+
+        {% if s.booked_count == 0 %}
+            <a href="{{ url_for('book_slot', slot_id=s.id) }}" class="book-btn">
+                <button class="book-btn">Book Now</button>
+            </a>
+        {% else %}
+            <button class="book-btn" disabled>Not Available</button>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-light mt-4">No slots available.</p>
+    <div id="noSlotsMessage" class="no-slots-message" style="display:none;">
+    🚫 <strong>Today's slots are closed.</strong><br>
+    📅 Tomorrow’s slots will be available soon.
+    </div>
+{% endif %}
+
+
+
+<!-- JAVASCRIPT -->
+<script>
+/* TAB FILTERING */
+document.querySelectorAll('.premium-tab').forEach(t => {
+    t.addEventListener('click', () => {
+        document.querySelectorAll('.premium-tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        filterByTab(t.dataset.tab);
+    });
+});
+
+/* MACHINE FILTERING */
+document.querySelectorAll('.filter-pill').forEach(p => {
+    p.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        applyFilter(p.dataset.filter);
+    });
+});
+
+function applyFilter(filter) {
+    const cards = document.querySelectorAll('.slot-card');
+    cards.forEach(c => {
+        c.style.display =
+            (filter === 'all' || c.dataset.machine === filter)
+            ? 'block' : 'none';
+    });
+}
+
+function filterByTab(tab) {
+    const cards = document.querySelectorAll('.slot-card');
+    const today = new Date();
+
+    cards.forEach(c => {
+        const d = new Date(c.dataset.date);
+
+        if (tab === 'all') c.style.display = 'block';
+        else if (tab === 'today') c.style.display =
+            d.toDateString() === today.toDateString() ? 'block' : 'none';
+        else if (tab === 'tomorrow') {
+            const t = new Date();
+            t.setDate(today.getDate() + 1);
+            c.style.display = d.toDateString() === t.toDateString() ? 'block' : 'none';
+        }
+        else if (tab === 'week') {
+            const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+            c.style.display = (diff >= 0 && diff <= 7) ? 'block' : 'none';
+        }
+    });
+}
+
+
+function hideExpiredSlots() {
+    const now = new Date();
+    let visibleCount = 0;
+
+    document.querySelectorAll('.slot-card').forEach(card => {
+        const date = card.dataset.date;
+        const endTime = card.dataset.endtime;
+
+        if (!date || !endTime) return;
+
+        const slotEnd = new Date(`${date}T${endTime}`);
+
+        if (slotEnd < now) {
+            card.style.display = "none";
+        } else {
+            card.style.display = "block";
+            visibleCount++;
+        }
+    });
+
+    // Show message if no slots available
+    const msg = document.getElementById("noSlotsMessage");
+    if (visibleCount === 0) {
+        msg.style.display = "block";
+    } else {
+        msg.style.display = "none";
+    }
+}
+
+
+/* REFRESH */
+document.getElementById('refreshBtn')?.addEventListener('click', () => location.reload());
+hideExpiredSlots();
+
+</script>
+
+{% endblock %}

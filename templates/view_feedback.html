@@ -1,0 +1,103 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<style>
+
+    .feedback-title {
+        font-weight: 800;
+        font-size: 2rem;
+        color: #ffd369;
+        text-shadow: 0px 0px 10px rgba(255,211,105,0.4);
+    }
+
+    /* Search bar */
+    .search-box {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+    }
+    .search-box input {
+        width: 60%;
+        padding: 12px 20px;
+        border-radius: 30px;
+        border: none;
+        outline: none;
+        font-size: 1rem;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    /* Feedback Cards */
+    .feedback-card {
+        background: rgba(255,255,255,0.08);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 18px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0px 6px 20px rgba(0,0,0,0.3);
+        transition: 0.3s ease;
+        color: white;
+        animation: fadeIn 0.4s ease-in-out;
+    }
+    .feedback-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 10px 25px rgba(255,211,105,0.4);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-user {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #ffd369;
+    }
+
+    .feedback-message {
+        font-size: 1rem;
+        margin: 8px 0;
+        color: #e4e4e4;
+    }
+
+    .feedback-time {
+        font-size: 0.9rem;
+        color: #bdbdbd;
+    }
+
+</style>
+
+<h2 class="feedback-title mb-4">📢 User Feedback</h2>
+
+<!-- Search -->
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search feedback by user or message...">
+</div>
+
+{% if feedbacks %}
+    {% for f in feedbacks %}
+        <div class="feedback-card">
+            <div class="feedback-user">👤 {{ f.user_name }}</div>
+            <div class="feedback-message">💬 {{ f.message }}</div>
+            <div class="feedback-time">🕒 {{ f.created_at }}</div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p class="text-light">No feedback submitted yet.</p>
+{% endif %}
+
+<!-- Search Script -->
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function () {
+    let keyword = this.value.toLowerCase();
+    document.querySelectorAll(".feedback-card").forEach(card => {
+        card.style.display = card.innerText.toLowerCase().includes(keyword)
+            ? "block"
+            : "none";
+    });
+});
+</script>
+
+{% endblock %}

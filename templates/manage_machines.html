@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Manage Machines</h2>
+<form method="POST" class="mb-4">
+  <div class="row g-2">
+    <div class="col-md-4">
+      <input type="text" name="name" class="form-control" placeholder="Machine Name" required>
+    </div>
+    <div class="col-md-4">
+      <input type="text" name="location" class="form-control" placeholder="Location" required>
+    </div>
+    <div class="col-md-4">
+      <button type="submit" class="btn btn-success">Add Machine</button>
+    </div>
+  </div>
+</form>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Location</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for m in machines %}
+  <tr>
+    <td>{{ m.id }}</td>
+    <td>{{ m.name }}</td>
+    <td>{{ m.location }}</td>
+    <td>{{ m.status }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
