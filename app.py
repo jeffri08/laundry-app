@@ -164,7 +164,7 @@ def register():
         cur = db.cursor()
         cur.execute("""
             INSERT INTO users (name, email, rollno, password_hash, phone, role)
-            VALUES (%s, %s, %s, %s, %s, 'admin')
+            VALUES (%s, %s, %s, %s, %s, 'operator')
         """, (name, email, rollno, password, phone))
         db.commit()
         cur.close()
