@@ -137,17 +137,17 @@
 
 
   <!-- SLOT CARDS -->
-  {% if slots %}
-<div class="slot-card"
-     data-machine="machine-{{ s.machine_id }}"
-     data-date="{{ s.slot_date }}"
-     data-endtime="{{ s.slot_end }}"
-     id="card-{{ s.id }}">
 
+{% if slots %}
+<div class="slot-container">
+    {% for s in slots %}
+    <div class="slot-card"
+         data-machine="machine-{{ s.machine_id }}"
+         data-date="{{ s.slot_date }}"
+         data-endtime="{{ s.slot_end }}"
+         id="card-{{ s.id }}">
 
-    >
         <div class="slot-header">🧺 {{ s.machine_name }}</div>
-
         <div class="slot-date">📅 {{ s.slot_date }}</div>
 
         <div>
@@ -170,14 +170,19 @@
         {% else %}
             <button class="book-btn" disabled>Not Available</button>
         {% endif %}
+
     </div>
     {% endfor %}
 </div>
 {% else %}
 <p class="text-light mt-4">No slots available.</p>
-
 {% endif %}
 
+
+<div id="noSlotsMessage" class="no-slots-message" style="display:none;">
+    🚫 <strong>Today's slots are closed.</strong><br>
+    📅 Tomorrow’s slots will be available soon.
+</div>
 
 
 <!-- JAVASCRIPT -->
@@ -231,11 +236,62 @@ function filterByTab(tab) {
     });
 }
 
+function hideExpiredSlots() {
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
+
+    let visibleCount = 0;
+    let hasFutureSlotToday = false;
+
+    document.querySelectorAll(".slot-card").forEach(card => {
+        const slotDate = card.dataset.date;      // yyyy-mm-dd
+        const endTime  = card.dataset.endtime;   // HH:MM:SS
+
+        if (!slotDate || !endTime) return;
+
+        const slotEnd = new Date(`${slotDate}T${endTime}`);
+
+        // ✅ Show tomorrow & future slots always
+        if (slotDate > todayStr) {
+            card.style.display = "block";
+            visibleCount++;
+            return;
+        }
+
+        // 🔴 Today’s expired slot → hide
+        if (slotEnd < now) {
+            card.style.display = "none";
+        } else {
+            card.style.display = "block";
+            visibleCount++;
+            hasFutureSlotToday = true;
+        }
+    });
+
+    // 🔔 Message handling
+    const msg = document.getElementById("noSlotsMessage");
+
+    if (!hasFutureSlotToday && visibleCount > 0) {
+        // Today finished, tomorrow exists
+        msg.style.display = "block";
+        msg.innerHTML = `
+            🚫 <strong>Today's slots are closed.</strong><br>
+            📅 Tomorrow’s slots will be available.
+        `;
+    } else if (visibleCount === 0) {
+        // No slots at all
+        msg.style.display = "block";
+        msg.innerHTML = "🚫 No slots available.";
+    } else {
+        msg.style.display = "none";
+    }
+}
 
 
 
 /* REFRESH */
 document.getElementById('refreshBtn')?.addEventListener('click', () => location.reload());
+hideExpiredSlots();
 
 
 </script>
