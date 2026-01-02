@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import psycopg2
-
+from dotenv import load_dotenv
+load_dotenv()
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta, date
@@ -163,7 +164,7 @@ def register():
         cur = db.cursor()
         cur.execute("""
             INSERT INTO users (name, email, rollno, password_hash, phone, role)
-            VALUES (%s, %s, %s, %s, %s, 'user')
+            VALUES (%s, %s, %s, %s, %s, 'admin')
         """, (name, email, rollno, password, phone))
         db.commit()
         cur.close()
