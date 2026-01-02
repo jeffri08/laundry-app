@@ -7,6 +7,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta, date
 import heapq
 import os
+from zoneinfo import ZoneInfo   # Python 3.9+
+
+IST = ZoneInfo("Asia/Kolkata")
+
 
 app = Flask(__name__)
 app.secret_key = "replace_with_a_random_secret_key"
@@ -85,56 +89,68 @@ def get_settings():
 # SLOT GENERATION
 # =====================================================
 def generate_daily_slots():
-    today = date.today()
+    today = datetime.now(IST).date()
+
     db = get_db()
     cur = db.cursor()
 
-    cur.execute("SELECT * FROM system_settings WHERE id = 1")
-    s = cur.fetchone()
+    try:
+        cur.execute("SELECT * FROM system_settings WHERE id = 1")
+        s = cur.fetchone()
+        if not s:
+            return
 
-    start_dt = datetime.combine(today, s["start_time"])
-    end_dt = datetime.combine(today, s["end_time"])
+        start_dt = datetime.combine(today, s["start_time"], tzinfo=IST)
+        end_dt = datetime.combine(today, s["end_time"], tzinfo=IST)
 
-    wash_duration = timedelta(minutes=s["wash_duration"])
-    break_after = s["break_after"]
-    break_duration = timedelta(minutes=s["break_duration"])
-    slots_per_day = s["slots_per_day"]
+        wash_duration = timedelta(minutes=s["wash_duration"])
+        break_after = s["break_after"]
+        break_duration = timedelta(minutes=s["break_duration"])
+        slots_per_day = s["slots_per_day"]
 
-    cur.execute("SELECT id FROM machines")
-    machines = cur.fetchall()
+        cur.execute("SELECT id FROM machines")
+        machines = cur.fetchall()
 
-    for m in machines:
-        cur.execute("""
-            SELECT COUNT(*) FROM slots
-            WHERE machine_id=%s AND slot_date=%s
-        """, (m["id"], today))
-
-        if cur.fetchone()["count"] > 0:
-            continue
-
-        current = start_dt
-        count = 0
-
-        while current + wash_duration <= end_dt and count < slots_per_day:
+        for m in machines:
+            # 🔐 Prevent duplicates (DB-level safety)
             cur.execute("""
-                INSERT INTO slots (machine_id, slot_date, slot_start, slot_end)
-                VALUES (%s, %s, %s, %s)
-            """, (
-                m["id"],
-                today,
-                current.time(),
-                (current + wash_duration).time()
-            ))
+                SELECT 1 FROM slots
+                WHERE machine_id=%s AND slot_date=%s
+                LIMIT 1
+            """, (m["id"], today))
 
-            count += 1
-            current += wash_duration
+            if cur.fetchone():
+                continue
 
-            if break_after > 0 and count % break_after == 0:
-                current += break_duration
+            current = start_dt
+            count = 0
 
-    db.commit()
-    cur.close()
-    db.close()
+            while current + wash_duration <= end_dt and count < slots_per_day:
+                cur.execute("""
+                    INSERT INTO slots (machine_id, slot_date, slot_start, slot_end)
+                    VALUES (%s, %s, %s, %s)
+                """, (
+                    m["id"],
+                    today,
+                    current.time(),
+                    (current + wash_duration).time()
+                ))
+
+                count += 1
+                current += wash_duration
+
+                if break_after > 0 and count % break_after == 0:
+                    current += break_duration
+
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        raise e
+
+    finally:
+        cur.close()
+        db.close()
 
 
 # =====================================================
