@@ -33,7 +33,7 @@ DB_CONFIG = {
 #         cursor_factory=psycopg2.extras.RealDictCursor
 #     )
 
-DATABASE_URL=postgresql://laundry_db_pjb0_user:an7KnbVgrIQ94qkyGGw8kjUui1DF9cBM@dpg-d5btkd75r7bs73al9sjg-a/laundry_db_pjb0
+# DATABASE_URL=postgresql://laundry_db_pjb0_user:an7KnbVgrIQ94qkyGGw8kjUui1DF9cBM@dpg-d5btkd75r7bs73al9sjg-a/laundry_db_pjb0
 
 def get_db():
     database_url = os.getenv("DATABASE_URL")
