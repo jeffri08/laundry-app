@@ -183,121 +183,91 @@
 <!-- JAVASCRIPT -->
 <script>
 /* TAB FILTERING */
-document.querySelectorAll('.premium-tab').forEach(t => {
-    t.addEventListener('click', () => {
-        document.querySelectorAll('.premium-tab').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-        filterByTab(t.dataset.tab);
-    });
-});
 
-let activeMachine = "all";
-let activeTab = "all";
+document.querySelectorAll(".filter-pill").forEach(p => {
+    p.addEventListener("click", () => {
+        document.querySelectorAll(".filter-pill")
+            .forEach(x => x.classList.remove("active"));
 
-function updateVisibility() {
-    const cards = document.querySelectorAll('.slot-card');
-    const today = new Date().toDateString();
-
-    cards.forEach(card => {
-        let show = true;
-
-        // MACHINE FILTER
-        if (activeMachine !== "all" && card.dataset.machine !== activeMachine) {
-            show = false;
-        }
-
-        // TAB FILTER
-        const d = new Date(card.dataset.date).toDateString();
-        if (activeTab === "today" && d !== today) show = false;
-        if (activeTab === "tomorrow") {
-            const t = new Date();
-            t.setDate(t.getDate() + 1);
-            if (d !== t.toDateString()) show = false;
-        }
-
-        card.style.display = show ? "block" : "none";
-    });
-}
-
-document.querySelectorAll('.filter-pill').forEach(p => {
-    p.addEventListener('click', () => {
-        document.querySelectorAll('.filter-pill')
-            .forEach(x => x.classList.remove('active'));
-
-        p.classList.add('active');
+        p.classList.add("active");
         activeMachine = p.dataset.filter;
         updateVisibility();
     });
 });
 
-document.querySelectorAll('.premium-tab').forEach(t => {
-    t.addEventListener('click', () => {
-        document.querySelectorAll('.premium-tab')
-            .forEach(x => x.classList.remove('active'));
+document.querySelectorAll(".premium-tab").forEach(t => {
+    t.addEventListener("click", () => {
+        document.querySelectorAll(".premium-tab")
+            .forEach(x => x.classList.remove("active"));
 
-        t.classList.add('active');
+        t.classList.add("active");
         activeTab = t.dataset.tab;
         updateVisibility();
     });
 });
 
-<!--function hideExpiredSlots() {-->
-<!--    const now = new Date();-->
-<!--    const todayStr = now.toISOString().split("T")[0];-->
 
-<!--    let visibleCount = 0;-->
-<!--    let hasFutureSlotToday = false;-->
+function updateVisibility() {
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
 
-<!--    document.querySelectorAll(".slot-card").forEach(card => {-->
-<!--        const slotDate = card.dataset.date;      // yyyy-mm-dd-->
-<!--        const endTime  = card.dataset.endtime;   // HH:MM:SS-->
+    let visibleCount = 0;
+    let hasFutureSlotToday = false;
 
-<!--        if (!slotDate || !endTime) return;-->
+    document.querySelectorAll(".slot-card").forEach(card => {
+        let show = true;
 
-<!--        const slotEnd = new Date(`${slotDate}T${endTime}`);-->
+        const slotDate = card.dataset.date;
+        const endTime  = card.dataset.endtime;
+        const slotEnd  = new Date(`${slotDate}T${endTime}`);
 
-<!--        // ✅ Show tomorrow & future slots always-->
-<!--        if (slotDate > todayStr) {-->
-<!--            card.style.display = "block";-->
-<!--            visibleCount++;-->
-<!--            return;-->
-<!--        }-->
+        /* ---------------- MACHINE FILTER ---------------- */
+        if (activeMachine !== "all" && card.dataset.machine !== activeMachine) {
+            show = false;
+        }
 
-<!--        // 🔴 Today’s expired slot → hide-->
-<!--        if (slotEnd < now) {-->
-<!--            card.style.display = "none";-->
-<!--        } else {-->
-<!--            card.style.display = "block";-->
-<!--            visibleCount++;-->
-<!--            hasFutureSlotToday = true;-->
-<!--        }-->
-<!--    });-->
+        /* ---------------- TAB FILTER ---------------- */
+        if (activeTab === "today" && slotDate !== todayStr) {
+            show = false;
+        }
 
-<!--    // 🔔 Message handling-->
-<!--    const msg = document.getElementById("noSlotsMessage");-->
+        /* ---------------- EXPIRED SLOT RULE ---------------- */
+        if (slotDate === todayStr && slotEnd < now) {
+            show = false;
+        }
 
-<!--    if (!hasFutureSlotToday && visibleCount > 0) {-->
-<!--        // Today finished, tomorrow exists-->
-<!--        msg.style.display = "block";-->
-<!--        msg.innerHTML = `-->
-<!--            🚫 <strong>Today's slots are closed.</strong><br>-->
-<!--            📅 Tomorrow’s slots will be available.-->
-<!--        `;-->
-<!--    } else if (visibleCount === 0) {-->
-<!--        // No slots at all-->
-<!--        msg.style.display = "block";-->
-<!--        msg.innerHTML = "🚫 No slots available.";-->
-<!--    } else {-->
-<!--        msg.style.display = "none";-->
-<!--    }-->
-<!--}-->
+        /* ---------------- APPLY ---------------- */
+        card.style.display = show ? "block" : "none";
 
+        if (show) {
+            visibleCount++;
+            if (slotDate === todayStr && slotEnd > now) {
+                hasFutureSlotToday = true;
+            }
+        }
+    });
+
+    /* ---------------- MESSAGE ---------------- */
+    const msg = document.getElementById("noSlotsMessage");
+    if (!msg) return;
+
+    if (!hasFutureSlotToday && visibleCount > 0) {
+        msg.style.display = "block";
+        msg.innerHTML = `
+            🚫 <strong>Today's slots are closed.</strong><br>
+            📅 Tomorrow’s slots will be available.
+        `;
+    } else if (visibleCount === 0) {
+        msg.style.display = "block";
+        msg.innerHTML = "🚫 No slots available.";
+    } else {
+        msg.style.display = "none";
+    }
+}
 
 
 /* REFRESH */
-document.getElementById('refreshBtn')?.addEventListener('click', () => location.reload());
-<!--hideExpiredSlots();-->
-
+updateVisibility();
 
 </script>
 
