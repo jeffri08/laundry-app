@@ -183,119 +183,56 @@
 <!-- JAVASCRIPT -->
 <script>
 /* TAB FILTERING */
-
-document.querySelectorAll(".filter-pill").forEach(p => {
-    p.addEventListener("click", () => {
-        document.querySelectorAll(".filter-pill")
-            .forEach(x => x.classList.remove("active"));
-
-        p.classList.add("active");
-        activeMachine = p.dataset.filter;
-        updateVisibility();
+document.querySelectorAll('.premium-tab').forEach(t => {
+    t.addEventListener('click', () => {
+        document.querySelectorAll('.premium-tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        filterByTab(t.dataset.tab);
     });
 });
 
-document.querySelectorAll(".premium-tab").forEach(t => {
-    t.addEventListener("click", () => {
-        document.querySelectorAll(".premium-tab")
-            .forEach(x => x.classList.remove("active"));
-
-        t.classList.add("active");
-        activeTab = t.dataset.tab;
-        updateVisibility();
+/* MACHINE FILTERING */
+document.querySelectorAll('.filter-pill').forEach(p => {
+    p.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        applyFilter(p.dataset.filter);
     });
 });
 
-
-function updateVisibility() {
-    const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];
-
-    let visibleCount = 0;
-    let hasFutureSlotToday = false;
-
-    document.querySelectorAll(".slot-card").forEach(card => {
-        let show = true;
-
-        const slotDate = card.dataset.date;
-        const endTime  = card.dataset.endtime;
-        const slotEnd  = new Date(`${slotDate}T${endTime}`);
-
-        /* ---------------- MACHINE FILTER ---------------- */
-        if (activeMachine !== "all" && card.dataset.machine !== activeMachine) {
-            show = false;
-        }
-
-        /* ---------------- TAB FILTER ---------------- */
-        if (activeTab === "today" && slotDate !== todayStr) {
-            show = false;
-        }
-
-        /* ---------------- EXPIRED SLOT RULE ---------------- */
-        if (slotDate === todayStr && slotEnd < now) {
-            show = false;
-        }
-
-        /* ---------------- APPLY ---------------- */
-        card.style.display = show ? "block" : "none";
-
-        if (show) {
-            visibleCount++;
-            if (slotDate === todayStr && slotEnd > now) {
-                hasFutureSlotToday = true;
-            }
-        }
-    });
-
-    /* ---------------- MESSAGE ---------------- */
-    const msg = document.getElementById("noSlotsMessage");
-    if (!msg) return;
-
-    if (!hasFutureSlotToday && visibleCount > 0) {
-        msg.style.display = "block";
-        msg.innerHTML = `
-            🚫 <strong>Today's slots are closed.</strong><br>
-            📅 Tomorrow’s slots will be available.
-        `;
-    } else if (visibleCount === 0) {
-        msg.style.display = "block";
-        msg.innerHTML = "🚫 No slots available.";
-    } else {
-        msg.style.display = "none";
-    }
-}
-document.querySelectorAll(".filter-pill").forEach(btn => {
-    btn.addEventListener("click", () => {
-
-        // UI active state
-        document.querySelectorAll(".filter-pill")
-            .forEach(x => x.classList.remove("active"));
-        btn.classList.add("active");
-
-        // Set active machine
-        activeMachine = btn.dataset.machine || "all";
-
-        filterSlotsByMachine();
-    });
-});
-function filterSlotsByMachine() {
-    document.querySelectorAll(".slot-card").forEach(card => {
-        if (activeMachine === "all") {
-            card.style.display = "block";
-        } else if (card.dataset.machine === activeMachine) {
-            card.style.display = "block";
-        } else {
-            card.style.display = "none";
-        }
+function applyFilter(filter) {
+    const cards = document.querySelectorAll('.slot-card');
+    cards.forEach(c => {
+        c.style.display =
+            (filter === 'all' || c.dataset.machine === filter)
+            ? 'block' : 'none';
     });
 }
 
+function filterByTab(tab) {
+    const cards = document.querySelectorAll('.slot-card');
+    const today = new Date();
+
+    cards.forEach(c => {
+        const d = new Date(c.dataset.date);
+
+        if (tab === 'all') c.style.display = 'block';
+        else if (tab === 'today') c.style.display =
+            d.toDateString() === today.toDateString() ? 'block' : 'none';
+        else if (tab === 'tomorrow') {
+            const t = new Date();
+            t.setDate(today.getDate() + 1);
+            c.style.display = d.toDateString() === t.toDateString() ? 'block' : 'none';
+        }
+        else if (tab === 'week') {
+            const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+            c.style.display = (diff >= 0 && diff <= 7) ? 'block' : 'none';
+        }
+    });
+}
 
 /* REFRESH */
-updateVisibility();
-filterSlotsByMachine();
-
-
+document.getElementById('refreshBtn')?.addEventListener('click', () => location.reload());
 </script>
 
 {% endblock %}
