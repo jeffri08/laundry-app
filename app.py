@@ -296,7 +296,7 @@ def view_slots():
                 (s.slot_date > %s)
                 OR (s.slot_date = %s AND s.slot_end > %s)
             ORDER BY s.slot_date, s.slot_start
-        """, (today, today, now.time()))
+        """, (today, date.today(), now.time()))
 
         slots = cur.fetchall()
 
