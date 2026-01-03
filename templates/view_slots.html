@@ -191,45 +191,55 @@ document.querySelectorAll('.premium-tab').forEach(t => {
     });
 });
 
-/* MACHINE FILTERING */
+let activeMachine = "all";
+let activeTab = "all";
+
+function updateVisibility() {
+    const cards = document.querySelectorAll('.slot-card');
+    const today = new Date().toDateString();
+
+    cards.forEach(card => {
+        let show = true;
+
+        // MACHINE FILTER
+        if (activeMachine !== "all" && card.dataset.machine !== activeMachine) {
+            show = false;
+        }
+
+        // TAB FILTER
+        const d = new Date(card.dataset.date).toDateString();
+        if (activeTab === "today" && d !== today) show = false;
+        if (activeTab === "tomorrow") {
+            const t = new Date();
+            t.setDate(t.getDate() + 1);
+            if (d !== t.toDateString()) show = false;
+        }
+
+        card.style.display = show ? "block" : "none";
+    });
+}
+
 document.querySelectorAll('.filter-pill').forEach(p => {
     p.addEventListener('click', () => {
-        document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.filter-pill')
+            .forEach(x => x.classList.remove('active'));
+
         p.classList.add('active');
-        applyFilter(p.dataset.filter);
+        activeMachine = p.dataset.filter;
+        updateVisibility();
     });
 });
 
-function applyFilter(filter) {
-    const cards = document.querySelectorAll('.slot-card');
-    cards.forEach(c => {
-        c.style.display =
-            (filter === 'all' || c.dataset.machine === filter)
-            ? 'block' : 'none';
+document.querySelectorAll('.premium-tab').forEach(t => {
+    t.addEventListener('click', () => {
+        document.querySelectorAll('.premium-tab')
+            .forEach(x => x.classList.remove('active'));
+
+        t.classList.add('active');
+        activeTab = t.dataset.tab;
+        updateVisibility();
     });
-}
-
-function filterByTab(tab) {
-    const cards = document.querySelectorAll('.slot-card');
-    const today = new Date();
-
-    cards.forEach(c => {
-        const d = new Date(c.dataset.date);
-
-        if (tab === 'all') c.style.display = 'block';
-        else if (tab === 'today') c.style.display =
-            d.toDateString() === today.toDateString() ? 'block' : 'none';
-        else if (tab === 'tomorrow') {
-            const t = new Date();
-            t.setDate(today.getDate() + 1);
-            c.style.display = d.toDateString() === t.toDateString() ? 'block' : 'none';
-        }
-        else if (tab === 'week') {
-            const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-            c.style.display = (diff >= 0 && diff <= 7) ? 'block' : 'none';
-        }
-    });
-}
+});
 
 <!--function hideExpiredSlots() {-->
 <!--    const now = new Date();-->
