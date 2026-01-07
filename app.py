@@ -692,7 +692,7 @@ def view_users():
 
     return render_template('view_users.html', users=users)
 
-#--------------DELETE USERS--------------
+# -------------- DELETE USER (ADMIN FORCE DELETE) --------------
 @app.route('/admin/delete_user/<int:user_id>')
 def delete_user(user_id):
 
@@ -700,49 +700,54 @@ def delete_user(user_id):
         flash("Unauthorized access!", "danger")
         return redirect(url_for('dashboard'))
 
+    # Prevent admin deleting themselves
+    if session.get("user_id") == user_id:
+        flash("You cannot delete your own account.", "warning")
+        return redirect(url_for('view_users'))
+
+    db = None
+    cur = None
+
     try:
         db = get_db()
         cur = db.cursor()
 
-        # Prevent admin from deleting themselves
-        if session.get("user_id") == user_id:
-            flash("You cannot delete your own account.", "warning")
-            return redirect(url_for('view_users'))
-
-        # Check if user exists
-        cur.execute(
-            "SELECT 1 FROM bookings WHERE user_id = %s AND status = 'booked'",
-            (user_id,)
-        )
-        if cur.fetchone():
-            flash("User has active bookings.", "warning")
-            return redirect(url_for('view_users'))
-
+        # ✅ Check if user exists
+        cur.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+        user = cur.fetchone()
 
         if not user:
             flash("User not found.", "danger")
             return redirect(url_for('view_users'))
 
-        # Delete user
+        # ✅ Cancel ALL active bookings (booked + validated)
+        cur.execute("""
+            UPDATE bookings
+            SET status = 'cancelled'
+            WHERE user_id = %s
+            AND status IN ('booked', 'validated')
+        """, (user_id,))
+
+        # ✅ Delete user
         cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+
         db.commit()
 
-        flash("User deleted successfully.", "success")
+        flash("User deleted and all bookings cancelled successfully.", "success")
 
     except Exception as e:
-        db.rollback()
-        flash("Something went wrong while deleting the user.", "danger")
-        print("Delete user error:", e)
+        if db:
+            db.rollback()
+        flash("Error deleting user. Please try again.", "danger")
+        print("DELETE USER ERROR:", e)
 
     finally:
-        try:
+        if cur:
             cur.close()
+        if db:
             db.close()
-        except:
-            pass
 
     return redirect(url_for('view_users'))
-
 
 
 #----------E - RECEIPT---------------
