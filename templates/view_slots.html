@@ -114,7 +114,7 @@
       <div>
           <h2 style="color:white;"> Premium Slots</h2>
           <p class="text-muted" style="color:#dfe9ff">
-              Book by date, machine or week — premium experience
+              Book by date, machine — premium experience
           </p>
       </div>
 
@@ -151,8 +151,8 @@
         <div class="slot-date">📅 {{ s.slot_date }}</div>
 
         <div>
-            <span class="slot-time-box">Start: {{ s.slot_start }}</span>
-            <span class="slot-time-box">End: {{ s.slot_end }}</span>
+            <span class="slot-time-box">Start: {{ s.slot_start | to12hr }}</span>
+            <span class="slot-time-box">End: {{ s.slot_end | to12hr }}</span>
         </div>
 
         <div class="mt-3">
@@ -177,62 +177,55 @@
 {% else %}
 <p class="text-light mt-4">No slots available.</p>
 {% endif %}
+    {% if today_closed %}
+<div class="no-slots-message">
+    🚫 <strong>Today's slots are closed.</strong><br>
+    📅 Slots will be updated tomorrow.
+</div>
+{% endif %}
+
 
 
 
 <!-- JAVASCRIPT -->
 <script>
-/* TAB FILTERING */
-document.querySelectorAll('.premium-tab').forEach(t => {
-    t.addEventListener('click', () => {
-        document.querySelectorAll('.premium-tab').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-        filterByTab(t.dataset.tab);
-    });
-});
+let activeMachine = "all";
 
-/* MACHINE FILTERING */
-document.querySelectorAll('.filter-pill').forEach(p => {
-    p.addEventListener('click', () => {
-        document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
-        p.classList.add('active');
-        applyFilter(p.dataset.filter);
-    });
-});
+/* MACHINE FILTER */
+document.querySelectorAll(".filter-pill").forEach(btn => {
+    btn.addEventListener("click", () => {
 
-function applyFilter(filter) {
-    const cards = document.querySelectorAll('.slot-card');
-    cards.forEach(c => {
-        c.style.display =
-            (filter === 'all' || c.dataset.machine === filter)
-            ? 'block' : 'none';
-    });
-}
-
-function filterByTab(tab) {
-    const cards = document.querySelectorAll('.slot-card');
-    const today = new Date();
-
-    cards.forEach(c => {
-        const d = new Date(c.dataset.date);
-
-        if (tab === 'all') c.style.display = 'block';
-        else if (tab === 'today') c.style.display =
-            d.toDateString() === today.toDateString() ? 'block' : 'none';
-        else if (tab === 'tomorrow') {
-            const t = new Date();
-            t.setDate(today.getDate() + 1);
-            c.style.display = d.toDateString() === t.toDateString() ? 'block' : 'none';
+        if (btn.id === "refreshBtn") {
+            location.reload();
+            return;
         }
-        else if (tab === 'week') {
-            const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-            c.style.display = (diff >= 0 && diff <= 7) ? 'block' : 'none';
+
+        document.querySelectorAll(".filter-pill")
+            .forEach(x => x.classList.remove("active"));
+        btn.classList.add("active");
+
+        activeMachine = btn.dataset.filter;
+        filterSlots();
+    });
+});
+
+function filterSlots() {
+    document.querySelectorAll(".slot-card").forEach(card => {
+        if (activeMachine === "all") {
+            card.style.display = "block";
+        } else {
+            card.style.display =
+                card.dataset.machine === activeMachine
+                ? "block"
+                : "none";
         }
     });
 }
 
-/* REFRESH */
-document.getElementById('refreshBtn')?.addEventListener('click', () => location.reload());
+/* RUN ON LOAD */
+filterSlots();
 </script>
+
+
 
 {% endblock %}
