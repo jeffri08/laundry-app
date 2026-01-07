@@ -218,7 +218,7 @@ def login():
     return render_template("login.html")
 
 #-----------------FORGOT PASSWORD---------------
-@app.route("/forgot-password", methods=["GET", "POST"])
+@app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     try:
         if request.method == "POST":
@@ -253,6 +253,48 @@ def forgot_password():
         print("FORGOT PASSWORD ERROR:", e)
 
     return render_template("forgot_password.html")
+
+
+#----------------RESET PASSWORD--------------------
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    try:
+        db = get_db()
+        cur = db.cursor()
+
+        cur.execute("""
+            SELECT id, reset_token_expiry
+            FROM users
+            WHERE reset_token=%s
+        """, (token,))
+        user = cur.fetchone()
+
+        if not user or user["reset_token_expiry"] < datetime.utcnow():
+            flash("Reset link expired or invalid.", "danger")
+            return redirect(url_for("login"))
+
+        if request.method == "POST":
+            new_password = request.form["password"]
+            hashed = generate_password_hash(new_password)
+
+            cur.execute("""
+                UPDATE users
+                SET password_hash=%s, reset_token=NULL, reset_token_expiry=NULL
+                WHERE id=%s
+            """, (hashed, user["id"]))
+
+            db.commit()
+            flash("Password reset successful. Login now.", "success")
+            return redirect(url_for("login"))
+
+        cur.close()
+        db.close()
+
+    except Exception as e:
+        flash("Password reset failed.", "danger")
+        print("RESET ERROR:", e)
+
+    return render_template("reset_password.html")
 
 
 # ---------- Logout ----------
