@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, date
 import heapq
 import os
 from zoneinfo import ZoneInfo   # Python 3.9+
+import secrets
 
 IST = ZoneInfo("Asia/Kolkata")
 
@@ -195,20 +196,63 @@ def register():
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        email = request.form["email"].lower()
-        password = request.form["password"]
+    try:
+        if request.method == "POST":
+            email = request.form["email"].lower().strip()
+            password = request.form["password"]
 
-        user = get_user_by_email(email)
-        if user and check_password_hash(user["password_hash"], password):
-            session["user_id"] = user["id"]
-            session["role"] = user["role"]
-            session["user_name"] = user["name"]
-            return redirect(url_for("dashboard"))
+            user = get_user_by_email(email)
 
-        flash("Invalid credentials", "danger")
+            if user and check_password_hash(user["password_hash"], password):
+                session["user_id"] = user["id"]
+                session["role"] = user["role"]
+                session["user_name"] = user["name"]
+                return redirect(url_for("dashboard"))
+
+            flash("Invalid email or password", "danger")
+
+    except Exception as e:
+        flash("Login failed. Please try again.", "danger")
+        print("LOGIN ERROR:", e)
 
     return render_template("login.html")
+
+#-----------------FORGOT PASSWORD---------------
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    try:
+        if request.method == "POST":
+            email = request.form["email"].lower().strip()
+            user = get_user_by_email(email)
+
+            if not user:
+                flash("No account found with this email.", "warning")
+                return redirect(url_for("forgot_password"))
+
+            token = secrets.token_urlsafe(32)
+            expiry = datetime.utcnow() + timedelta(minutes=15)
+
+            db = get_db()
+            cur = db.cursor()
+            cur.execute("""
+                UPDATE users
+                SET reset_token=%s, reset_token_expiry=%s
+                WHERE email=%s
+            """, (token, expiry, email))
+            db.commit()
+            cur.close()
+            db.close()
+
+            # 🔹 For demo (Render-safe)
+            flash(f"Password reset token: {token}", "info")
+
+            return redirect(url_for("reset_password", token=token))
+
+    except Exception as e:
+        flash("Something went wrong. Try again.", "danger")
+        print("FORGOT PASSWORD ERROR:", e)
+
+    return render_template("forgot_password.html")
 
 
 # ---------- Logout ----------
