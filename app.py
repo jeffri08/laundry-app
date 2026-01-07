@@ -840,37 +840,42 @@ def Machine_operator():
     # for r in rows:
     #     if r["status"] == "cancelled":
     #         cancelled.append(r)
-    #     else:
-    #         dt = datetime.combine(r["slot_date"], r["slot_start"])
-    #         heapq.heappush(pq, (dt, r["id"], r))
+    #         continue
     #
-    # sorted_bookings = [heapq.heappop(pq)[2] for _ in range(len(pq))]
+    #     dt_string = f"{r['slot_date']} {r['slot_start']}"
+    #     slot_dt = datetime.strptime(dt_string, "%Y-%m-%d %H:%M:%S")
+    #
+    #     # NEGATE timestamp to make max-heap
+    #     heapq.heappush(
+    #         pq,
+    #         (-slot_dt.timestamp(), r["id"], r)
+    #     )
+    #
+    # # Extract sorted values (latest first)
+    # sorted_by_time = [heapq.heappop(pq)[2] for _ in range(len(pq))]
+    #
+    # final_bookings = sorted_by_time + cancelled
     #
     # return render_template(
     #     "machine_operator.html",
-    #     bookings=sorted_bookings + cancelled
+    #     bookings=final_bookings
     # )
-    pq = []
+    active = []
     cancelled = []
 
     for r in rows:
         if r["status"] == "cancelled":
             cancelled.append(r)
-            continue
+        else:
+            active.append(r)
 
-        dt_string = f"{r['slot_date']} {r['slot_start']}"
-        slot_dt = datetime.strptime(dt_string, "%Y-%m-%d %H:%M:%S")
+    # ✅ Sort ONLY by slot_date (DESC)
+    active.sort(
+        key=lambda r: r["slot_date"],
+        reverse=True
+    )
 
-        # NEGATE timestamp to make max-heap
-        heapq.heappush(
-            pq,
-            (-slot_dt.timestamp(), r["id"], r)
-        )
-
-    # Extract sorted values (latest first)
-    sorted_by_time = [heapq.heappop(pq)[2] for _ in range(len(pq))]
-
-    final_bookings = sorted_by_time + cancelled
+    final_bookings = active + cancelled
 
     return render_template(
         "machine_operator.html",
