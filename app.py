@@ -859,17 +859,23 @@ def Machine_operator():
             continue
 
         dt_string = f"{r['slot_date']} {r['slot_start']}"
-        priority_time = datetime.strptime(dt_string, "%Y-%m-%d %H:%M:%S")
+        slot_dt = datetime.strptime(dt_string, "%Y-%m-%d %H:%M:%S")
 
-        # Fix: add booking id as tie-breaker
-        heapq.heappush(pq, (priority_time, r["id"], r))
+        # NEGATE timestamp to make max-heap
+        heapq.heappush(
+            pq,
+            (-slot_dt.timestamp(), r["id"], r)
+        )
 
-    # extract sorted values
+    # Extract sorted values (latest first)
     sorted_by_time = [heapq.heappop(pq)[2] for _ in range(len(pq))]
 
     final_bookings = sorted_by_time + cancelled
 
-    return render_template("machine_operator.html", bookings=final_bookings)
+    return render_template(
+        "machine_operator.html",
+        bookings=final_bookings
+    )
 
 
 #-----------DELETE MACHINES------------------
