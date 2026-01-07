@@ -41,6 +41,14 @@ DB_CONFIG = {
 
 # DATABASE_URL=postgresql://laundry_db_pjb0_user:an7KnbVgrIQ94qkyGGw8kjUui1DF9cBM@dpg-d5btkd75r7bs73al9sjg-a/laundry_db_pjb0
 
+
+@app.template_filter('to12hr')
+def to12hr(t):
+    if not t:
+        return ""
+    return datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p")
+
+
 def get_db():
     database_url = os.getenv("DATABASE_URL")
 
@@ -346,15 +354,13 @@ def dashboard():
 #------------view slots---------------
 @app.route('/view_slots')
 def view_slots():
-
     if 'user_id' not in session:
         flash("Please login to view slots.", "warning")
         return redirect(url_for('login'))
 
     try:
         settings = get_settings()
-
-        if settings["auto_generate"]:
+        if settings.get("auto_generate"):
             generate_daily_slots()
 
         now = datetime.now()
@@ -364,36 +370,52 @@ def view_slots():
         cur = db.cursor()
 
         cur.execute("""
-            SELECT 
+            SELECT
                 s.id AS slot_id,
+                s.machine_id,
                 s.slot_date,
                 s.slot_start,
                 s.slot_end,
                 m.name AS machine_name,
-                (
-                    SELECT COUNT(*)
-                    FROM bookings b
-                    WHERE b.slot_id = s.id
-                    AND b.status IN ('booked', 'validated')
+                COUNT(b.id) FILTER (
+                    WHERE b.status IN ('booked','validated')
                 ) AS booked_count
             FROM slots s
-            JOIN machines m ON s.machine_id = m.id
-            WHERE 
+            JOIN machines m ON m.id = s.machine_id
+            LEFT JOIN bookings b ON b.slot_id = s.id
+
+            WHERE
                 (s.slot_date > %s)
-                OR (s.slot_date = %s AND s.slot_end > %s)
-            ORDER BY s.slot_date, s.slot_start
-        """, (today, date.today(), now.time()))
+                OR (s.slot_date = %s AND s.slot_start >= %s)
+
+            GROUP BY s.id, m.name
+
+            ORDER BY
+                CASE
+                    WHEN COUNT(b.id) FILTER (
+                        WHERE b.status IN ('booked','validated')
+                    ) = 0 THEN 0
+                    ELSE 1
+                END,
+                s.slot_date,
+                s.slot_start
+        """, (today, today, now.time()))
 
         slots = cur.fetchall()
 
         cur.execute("SELECT id, name FROM machines")
         machines = cur.fetchall()
 
+        # Check if any available slot exists today
+        today_open = any(
+            s["slot_date"] == today and s["booked_count"] == 0
+            for s in slots
+        )
+
     except Exception as e:
-        flash("Unable to load slots. Please try again later.", "danger")
         print("View slots error:", e)
-        slots = []
-        machines = []
+        flash("Unable to load slots. Please try again later.", "danger")
+        slots, machines, today_open = [], [], False
 
     finally:
         try:
@@ -405,8 +427,10 @@ def view_slots():
     return render_template(
         "view_slots.html",
         slots=slots,
-        machines=machines
+        machines=machines,
+        today_closed=not today_open
     )
+
 
 
 
