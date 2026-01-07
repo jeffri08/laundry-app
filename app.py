@@ -834,22 +834,42 @@ def Machine_operator():
     cur.close()
     db.close()
 
+    # pq = []
+    # cancelled = []
+    #
+    # for r in rows:
+    #     if r["status"] == "cancelled":
+    #         cancelled.append(r)
+    #     else:
+    #         dt = datetime.combine(r["slot_date"], r["slot_start"])
+    #         heapq.heappush(pq, (dt, r["id"], r))
+    #
+    # sorted_bookings = [heapq.heappop(pq)[2] for _ in range(len(pq))]
+    #
+    # return render_template(
+    #     "machine_operator.html",
+    #     bookings=sorted_bookings + cancelled
+    # )
     pq = []
     cancelled = []
 
     for r in rows:
         if r["status"] == "cancelled":
             cancelled.append(r)
-        else:
-            dt = datetime.combine(r["slot_date"], r["slot_start"])
-            heapq.heappush(pq, (dt, r["id"], r))
+            continue
 
-    sorted_bookings = [heapq.heappop(pq)[2] for _ in range(len(pq))]
+        dt_string = f"{r['slot_date']} {r['slot_start']}"
+        priority_time = datetime.strptime(dt_string, "%Y-%m-%d %H:%M:%S")
 
-    return render_template(
-        "machine_operator.html",
-        bookings=sorted_bookings + cancelled
-    )
+        # Fix: add booking id as tie-breaker
+        heapq.heappush(pq, (priority_time, r["id"], r))
+
+    # extract sorted values
+    sorted_by_time = [heapq.heappop(pq)[2] for _ in range(len(pq))]
+
+    final_bookings = sorted_by_time + cancelled
+
+    return render_template("machine_operator.html", bookings=final_bookings)
 
 
 #-----------DELETE MACHINES------------------
